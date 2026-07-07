@@ -38,8 +38,8 @@ class SessionManager:
             session_model = SessionModel.objects.get(session_id=session_id)
             # data shall be decoded, if needed
             my_session = MySession(
-                session_model.session_data,
                 session_model.session_id,
+                session_model.session_data,
                 session_model.expiration_date,
             )
             return SessionManager(my_session)
@@ -52,7 +52,7 @@ class SessionManager:
 
     @classmethod
     def create_new_session(cls):
-        return SessionManager(MySession({}))
+        return SessionManager(MySession())
 
     def is_valid(self) -> bool:
         """
