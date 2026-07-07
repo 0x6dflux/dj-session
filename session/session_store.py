@@ -1,8 +1,10 @@
 from typing import Any
+from uuid import uuid4
 
 
 class MySession:
     def __init__(self, data: dict[str, Any]):
+        self.session_id = uuid4()
         self.session_data = data
         self.is_session_modified = False
 
