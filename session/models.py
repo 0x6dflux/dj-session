@@ -11,6 +11,7 @@ def get_expiration_datetime():
 
 class SessionModel(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE)
+    session_data = models.JSONField(default=dict)
     expiration_date = models.DateTimeField(default=get_expiration_datetime)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
