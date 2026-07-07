@@ -11,24 +11,21 @@ class MySessionMiddleware:
         self.get_response = get_response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
+        session_manager = SessionManager.create_new_session()
+
         if request_session_id := request.COOKIES.get("sessionid"):
             print("*** request cookies sessionid", request_session_id)
+            # delete later
             print("*** request cookies sessionid type", type(request_session_id))
+            # delete later
 
-            request_session_id = UUID(request_session_id)
-
+            # converting from str to uuid
+            # the type of the sessionid value in the cookies, is str
+            session_manager = session_manager.load_session(UUID(request_session_id))
             # note that if the request_session_id does not exists in the DB,
             # the SessionManager will create a new MySession object
-            session_manager = SessionManager.load_or_create_session(request_session_id)
 
-            if session_manager.is_valid():
-                request.session = session_manager.session_obj
-            else:
-                request.session = SessionManager.create_new_session().session_obj
-
-        else:
-            request.session = SessionManager.create_new_session().session_obj
-        # the above if clause shall refactor later!!
+        request.session = session_manager.session_obj
 
         response = self.get_response(request)
         # response.set_cookie("sessionid", request.session.session_id)
