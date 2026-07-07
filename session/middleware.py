@@ -12,6 +12,7 @@ class MySessionMiddleware:
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         session_manager = SessionManager.create_new_session()
+        # in this way, the manager object is still available in the response processing.
 
         if request_session_id := request.COOKIES.get("sessionid"):
             print("*** request cookies sessionid", request_session_id)
@@ -29,12 +30,7 @@ class MySessionMiddleware:
 
         response = self.get_response(request)
 
-        response.set_cookie("sessionid", request.session.session_id)
-        # print("*** request session is_modified", request.session.is_session_modified)
-        # request.session["user"] = request.user.pk
-        # print("*** request session is_modified", request.session.is_session_modified)
-        # session_manager
-        # if request.session.is_session_modified:
-        #   encode the data
-        #   save session data to database
+        response.set_cookie("sessionid", session_manager.session_obj.session_id)
+        request.session["user"] = request.user.pk
+        session_manager.save_session()
         return response
