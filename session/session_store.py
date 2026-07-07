@@ -1,11 +1,15 @@
+from datetime import timedelta
 from typing import Any
 from uuid import uuid4
 
+from django.utils import timezone
+
 
 class MySession:
-    def __init__(self, data: dict[str, Any]):
+    def __init__(self, data: dict[str, Any]) -> None:
         self.session_id = uuid4()
         self.session_data = data
+        self.expiration_date = timezone.now() + timedelta(days=1)
         self.is_session_modified = False
 
     def __getitem__(self, key: str) -> Any:
