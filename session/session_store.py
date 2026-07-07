@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -9,10 +9,15 @@ from session.models import SessionModel
 
 
 class MySession:
-    def __init__(self, data: dict[str, Any]) -> None:
-        self.session_id = uuid4()
-        self.session_data = data
-        self.expiration_date = timezone.now() + timedelta(days=1)
+    def __init__(
+        self,
+        id: UUID | None = None,
+        data: dict[str, Any] | None = None,
+        exp_date: datetime | None = None,
+    ) -> None:
+        self.session_id = id or uuid4()
+        self.session_data = data or {}
+        self.expiration_date = exp_date or (timezone.now() + timedelta(days=1))
         self.is_session_modified = False
 
     def __getitem__(self, key: str) -> Any:
