@@ -88,3 +88,17 @@ class SessionManager:
         """
 
         return timezone.now() < expiration_date
+
+    def save_session(self):
+        """
+        This method will insert the session_data into the DB
+        """
+
+        if self.session_obj.is_session_modified:
+            # encode the session_data
+
+            SessionModel(
+                session_id=self.session_obj.session_id,
+                session_data=self.session_obj.session_data,
+                expiration_date=self.session_obj.expiration_date,
+            ).save()
