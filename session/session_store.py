@@ -97,8 +97,13 @@ class SessionManager:
         if self.session_obj.is_session_modified:
             # encode the session_data
 
-            SessionModel(
-                session_id=self.session_obj.session_id,
-                session_data=self.session_obj.session_data,
-                expiration_date=self.session_obj.expiration_date,
-            ).save()
+            if session_model := SessionModel.objects.filter(
+                session_id=self.session_obj.session_id
+            ):
+                session_model.update(session_data=self.session_obj.session_data)
+            else:
+                SessionModel(
+                    session_id=self.session_obj.session_id,
+                    session_data=self.session_obj.session_data,
+                    expiration_date=self.session_obj.expiration_date,
+                ).save()
