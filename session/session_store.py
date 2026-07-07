@@ -13,11 +13,11 @@ class MySession:
         self,
         id: UUID | None = None,
         data: dict[str, Any] | None = None,
-        exp_date: datetime | None = None,
+        expiration_date: datetime | None = None,
     ) -> None:
         self.session_id = id or uuid4()
         self.session_data = data or {}
-        self.expiration_date = exp_date or (timezone.now() + timedelta(days=1))
+        self.expiration_date = expiration_date or (timezone.now() + timedelta(days=1))
         self.is_session_modified = False
 
     def __getitem__(self, key: str) -> Any:
@@ -32,19 +32,46 @@ class SessionManager:
     def __init__(self, session_obj: MySession) -> None:
         self.session_obj = session_obj
 
-    @classmethod
-    def load_or_create_session(cls, session_id: UUID):
+    def load_session(self, session_id: UUID):
+        """
+        It is assumed that the self is a new raw instance of the SessionManager class.
+        The middleware creates this object using the SessionManager.create_new_session method.
+
+        Args:
+            session_id (UUID): _description_
+            This argument is set by the request.COOKIES.get("sessionid"),
+            which is used by the Django ORM to find the session model stored in the DB.
+
+        Raises:
+            MultipleObjectsReturned: _description_
+
+        Returns:
+            _type_: _description_
+        """
+
         try:
             session_model = SessionModel.objects.get(session_id=session_id)
+
             # data shall be decoded, if needed
-            my_session = MySession(
-                session_model.session_id,
-                session_model.session_data,
-                session_model.expiration_date,
-            )
-            return SessionManager(my_session)
+
+            if not SessionManager.is_valid(session_model.expiration_date):
+                # if the stored session in the database is expired
+                # the SessionManager.load_session method shall return the original object
+                return self
+
+            self.session_obj.session_id = session_model.session_id
+            self.session_obj.session_data = session_model.session_data
+            self.session_obj.expiration_date = session_model.expiration_date
+
+            return self
+
         except ObjectDoesNotExist:
-            return cls.create_new_session()
+            # if the get query raises this error
+            # the SessionManager.load_session method shall return the original object
+            return self
+
+        # this exception may be changed in the future
+        # it is not desirable that the system crashes
         except MultipleObjectsReturned:
             raise MultipleObjectsReturned(
                 "Multiple objects returned in the MySessionMiddleware."
@@ -54,9 +81,10 @@ class SessionManager:
     def create_new_session(cls):
         return SessionManager(MySession())
 
-    def is_valid(self) -> bool:
+    @staticmethod
+    def is_valid(expiration_date: datetime) -> bool:
         """
         This method checks whether the session is expired or not.
         """
 
-        return timezone.now() < self.session_obj.expiration_date
+        return timezone.now() < expiration_date
