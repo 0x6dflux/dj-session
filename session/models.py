@@ -1,14 +1,17 @@
+from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
-
-# Create your models here.
+def get_expiration_datetime():
+    return timezone.now() + timedelta(days=1)
 
 
 class SessionModel(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE)
+    expiration_date = models.DateTimeField(default=get_expiration_datetime)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         models.CASCADE,
