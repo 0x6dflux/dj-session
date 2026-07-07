@@ -15,5 +15,7 @@ class MySessionMiddleware:
         # request.session = MySession({})
         # do not forget to check the expiration date
         response = self.get_response(request)
-        print("after response", request.COOKIES)
+        # response.set_cookie("sessionid", request.session.session_id)
+        # if request.session.is_session_modified:
+        #   save session data to database
         return response
