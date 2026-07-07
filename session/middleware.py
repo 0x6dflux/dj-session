@@ -8,6 +8,12 @@ class MySessionMiddleware:
         self.get_response = get_response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
+        # read cookies
+        # get sessionid from cookies
+        # if sessionid exists, get session data from database
+        # else assign a new MySession obj
+        # request.session = MySession({})
+        # do not forget to check the expiration date
         response = self.get_response(request)
         print("after response", request.COOKIES)
         return response
