@@ -28,7 +28,13 @@ class MySessionMiddleware:
         request.session = session_manager.session_obj
 
         response = self.get_response(request)
-        # response.set_cookie("sessionid", request.session.session_id)
+
+        response.set_cookie("sessionid", request.session.session_id)
+        # print("*** request session is_modified", request.session.is_session_modified)
+        # request.session["user"] = request.user.pk
+        # print("*** request session is_modified", request.session.is_session_modified)
+        # session_manager
         # if request.session.is_session_modified:
+        #   encode the data
         #   save session data to database
         return response
