@@ -1,4 +1,5 @@
 from datetime import timedelta
+from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
@@ -10,7 +11,7 @@ def get_expiration_datetime():
 
 
 class SessionModel(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE)
+    session_id = models.UUIDField(unique=True, default=uuid4)
     session_data = models.JSONField(default=dict)
     expiration_date = models.DateTimeField(default=get_expiration_datetime)
     user = models.ForeignKey(
