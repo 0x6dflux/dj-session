@@ -1,8 +1,11 @@
 from datetime import timedelta
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.utils import timezone
+
+from session.models import SessionModel
 
 
 class MySession:
@@ -24,7 +27,27 @@ class SessionManager:
     def __init__(self, session_obj: MySession) -> None:
         self.session_obj = session_obj
 
-# class SessionManager:
+    @classmethod
+    def load_or_create_session(cls, session_id: UUID):
+        try:
+            session_model = SessionModel.objects.get(session_id=session_id)
+            # data shall be decoded, if needed
+            my_session = MySession(
+                session_model.session_data,
+                session_model.session_id,
+                session_model.expiration_date,
+            )
+            return SessionManager(my_session)
+        except ObjectDoesNotExist:
+            return cls.create_new_session()
+        except MultipleObjectsReturned:
+            raise MultipleObjectsReturned(
+                "Multiple objects returned in the MySessionMiddleware."
+            )
+
+    @classmethod
+    def create_new_session(cls):
+        return SessionManager(MySession({}))
 
     def is_valid(self) -> bool:
         """
