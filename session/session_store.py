@@ -20,4 +20,15 @@ class MySession:
         self.is_session_modified = True
 
 
+class SessionManager:
+    def __init__(self, session_obj: MySession) -> None:
+        self.session_obj = session_obj
+
 # class SessionManager:
+
+    def is_valid(self) -> bool:
+        """
+        This method checks whether the session is expired or not.
+        """
+
+        return timezone.now() < self.session_obj.expiration_date
