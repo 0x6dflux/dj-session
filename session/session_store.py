@@ -32,7 +32,7 @@ class SessionManager:
     def __init__(self, session_obj: MySession) -> None:
         self.session_obj = session_obj
 
-    def load_session(self, session_id: UUID):
+    def load_session(self, session_id: UUID) -> "SessionManager":
         """
         It is assumed that the self is a new raw instance of the SessionManager class.
         The middleware creates this object using the SessionManager.create_new_session method.
