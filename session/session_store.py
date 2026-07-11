@@ -9,6 +9,11 @@ from session.models import SessionModel
 
 
 class MySession:
+    """
+    This class represents the SessionModel instance in the RAM.
+    Looks like a RAM-Twin =)
+    """
+
     def __init__(
         self,
         id: UUID | None = None,
@@ -20,8 +25,6 @@ class MySession:
         self.expiration_date = expiration_date or (timezone.now() + timedelta(days=1))
         self.is_session_modified = False
         self.is_retrieved_from_db = False
-        # the below attribute, prevents a query to be performed multiple times
-        self.session_db_obj: SessionModel | None = None
 
     def __contains__(self, item):
         return item in self.session_data
@@ -43,6 +46,8 @@ class MySession:
 class SessionManager:
     def __init__(self) -> None:
         self.session_obj: MySession | None = None
+        # the below attribute, prevents a query to be performed multiple times
+        self.session_model_queryset: SessionModel | None = None
 
     def load_session(self, session_id: UUID):
         """
@@ -79,7 +84,7 @@ class SessionManager:
                 )
 
                 self.session_obj.is_retrieved_from_db = True
-                self.session_obj.session_db_obj = session_model
+                self.session_model_queryset = session_model
 
         except SessionModel.DoesNotExist:
             # if the get query raises this error
@@ -112,19 +117,17 @@ class SessionManager:
         if self.session_obj.is_retrieved_from_db:
             if self.session_obj.is_session_modified:
                 # overwriting the session_data of the db object with the modified data
-                self.session_obj.session_db_obj.session_data = (
-                    self.session_obj.session_data
-                )
-                self.session_obj.session_db_obj.save()
+                self.session_model_queryset.session_data = self.session_obj.session_data
+                self.session_model_queryset.save()
             # the else statement is not needed,
             # since, the session_data has not been modified
             # do not insert the save expression after the if-else clause,
             # because it would affect the is_session_modified logic
 
         else:
-            self.session_obj.session_db_obj = SessionModel(
+            self.session_model_queryset = SessionModel(
                 session_id=self.session_obj.session_id,
                 session_data=self.session_obj.session_data,
                 expiration_date=self.session_obj.expiration_date,
             )
-            self.session_obj.session_db_obj.save()
+            self.session_model_queryset.save()
