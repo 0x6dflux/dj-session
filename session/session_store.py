@@ -105,11 +105,20 @@ class SessionManager:
         This method will insert the session_data into the DB
         """
 
-        if self.session_obj.is_session_modified:
-            # encode the session_data
+        if self.session_obj.is_retrieved_from_db:
+            if self.session_obj.is_session_modified:
+                # overwriting the session_data of the db object with the modified data
+                self.session_obj.session_db_obj.session_data = (
+                    self.session_obj.session_data
+                )
+            # the else statement is not needed,
+            # since, the session_data has not been modified
 
-            SessionModel.objects.update_or_create(
+        else:
+            self.session_obj.session_db_obj = SessionModel(
                 session_id=self.session_obj.session_id,
                 session_data=self.session_obj.session_data,
                 expiration_date=self.session_obj.expiration_date,
             )
+
+        self.session_obj.session_db_obj.save()
