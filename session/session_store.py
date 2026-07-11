@@ -71,14 +71,15 @@ class SessionManager:
                 # the SessionManager.load_session method shall create a new session instance
                 self.create_new_session()
 
-            self.session_obj = MySession(
-                id=session_model.session_id,
-                data=session_model.session_data,
-                expiration_date=session_model.expiration_date,
-            )
+            else:
+                self.session_obj = MySession(
+                    id=session_model.session_id,
+                    data=session_model.session_data,
+                    expiration_date=session_model.expiration_date,
+                )
 
-            self.session_obj.is_retrieved_from_db = True
-            self.session_obj.session_db_obj = session_model
+                self.session_obj.is_retrieved_from_db = True
+                self.session_obj.session_db_obj = session_model
 
         except SessionModel.DoesNotExist:
             # if the get query raises this error
@@ -114,8 +115,11 @@ class SessionManager:
                 self.session_obj.session_db_obj.session_data = (
                     self.session_obj.session_data
                 )
+                self.session_obj.session_db_obj.save()
             # the else statement is not needed,
             # since, the session_data has not been modified
+            # do not insert the save expression after the if-else clause,
+            # because it would affect the is_session_modified logic
 
         else:
             self.session_obj.session_db_obj = SessionModel(
@@ -123,5 +127,4 @@ class SessionManager:
                 session_data=self.session_obj.session_data,
                 expiration_date=self.session_obj.expiration_date,
             )
-
-        self.session_obj.session_db_obj.save()
+            self.session_obj.session_db_obj.save()
