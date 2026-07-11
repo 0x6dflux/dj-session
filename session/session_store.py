@@ -33,6 +33,9 @@ class MySession:
         self.session_data[key] = value
         self.is_session_modified = True
 
+    def get(self, key):
+        return self.session_data.get(key)
+
     def cycle_key(self):
         pass
 
