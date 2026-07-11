@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.utils import timezone
 
 from session.models import SessionModel
@@ -94,8 +93,8 @@ class SessionManager:
         # this exception may be changed in the future
         # it is not desirable that the system crashes
         except SessionModel.MultipleObjectsReturned:
-            raise MultipleObjectsReturned(
-                "Multiple objects returned in the MySessionMiddleware."
+            raise SessionModel.MultipleObjectsReturned(
+                "Multiple SessionModel objects returned in the MySessionMiddleware."
             )
 
     def create_new_session(self):
