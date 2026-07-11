@@ -11,7 +11,7 @@ class MySessionMiddleware:
         self.get_response = get_response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
-        session_manager = SessionManager.create_new_session()
+        session_manager = SessionManager()
         # in this way, the manager object is still available in the response processing.
 
         if request_session_id := request.COOKIES.get("sessionid"):
