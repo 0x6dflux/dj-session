@@ -20,12 +20,18 @@ class MySession:
         self.expiration_date = expiration_date or (timezone.now() + timedelta(days=1))
         self.is_session_modified = False
 
+    def __contains__(self, item):
+        return item in self.session_data
+
     def __getitem__(self, key: str) -> Any:
         return self.session_data.get(key)
 
     def __setitem__(self, key: str, value: Any) -> None:
         self.session_data[key] = value
         self.is_session_modified = True
+
+    def cycle_key(self):
+        pass
 
 
 class SessionManager:
