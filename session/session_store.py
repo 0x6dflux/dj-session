@@ -44,9 +44,9 @@ class MySession:
 
 class SessionManager:
     def __init__(self) -> None:
-        self.session_obj: MySession | None = None
+        self.session_obj: MySession
         # the below attribute, prevents a query to be performed multiple times
-        self.session_model_obj: SessionModel | None = None
+        self.session_model_obj: SessionModel
 
     def load_session(self, session_id: UUID):
         """
