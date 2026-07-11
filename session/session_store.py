@@ -46,7 +46,7 @@ class SessionManager:
     def __init__(self) -> None:
         self.session_obj: MySession | None = None
         # the below attribute, prevents a query to be performed multiple times
-        self.session_model_queryset: SessionModel | None = None
+        self.session_model_obj: SessionModel | None = None
 
     def load_session(self, session_id: UUID):
         """
@@ -83,7 +83,7 @@ class SessionManager:
                 )
 
                 self.session_obj.is_retrieved_from_db = True
-                self.session_model_queryset = session_model
+                self.session_model_obj = session_model
 
         except SessionModel.DoesNotExist:
             # if the get query raises this error
@@ -116,17 +116,17 @@ class SessionManager:
         if self.session_obj.is_retrieved_from_db:
             if self.session_obj.is_session_modified:
                 # overwriting the session_data of the db object with the modified data
-                self.session_model_queryset.session_data = self.session_obj.session_data
-                self.session_model_queryset.save()
+                self.session_model_obj.session_data = self.session_obj.session_data
+                self.session_model_obj.save()
             # the else statement is not needed,
             # since, the session_data has not been modified
             # do not insert the save expression after the if-else clause,
             # because it would affect the is_session_modified logic
 
         else:
-            self.session_model_queryset = SessionModel(
+            self.session_model_obj = SessionModel(
                 session_id=self.session_obj.session_id,
                 session_data=self.session_obj.session_data,
                 expiration_date=self.session_obj.expiration_date,
             )
-            self.session_model_queryset.save()
+            self.session_model_obj.save()
