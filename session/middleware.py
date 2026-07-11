@@ -34,7 +34,10 @@ class MySessionMiddleware:
 
         response = self.get_response(request)
 
-        response.set_cookie("sessionid", session_manager.session_obj.session_id)
-        request.session["user"] = request.user.pk
+        if not session_manager.session_obj.is_retrieved_from_db:
+            response.set_cookie("sessionid", session_manager.session_obj.session_id)
+        # the else statement is not needed,
+        # since the request does have a cookie with a sessionid key
+
         session_manager.save_session()
         return response
