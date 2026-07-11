@@ -22,11 +22,15 @@ class MySessionMiddleware:
 
             # converting from str to uuid
             # the type of the sessionid value in the cookies, is str
-            session_manager = session_manager.load_session(UUID(request_session_id))
+            session_manager.load_session(UUID(request_session_id))
             # note that if the request_session_id does not exists in the DB,
             # the SessionManager will create a new MySession object
 
+        else:
+            session_manager.create_new_session()
+
         request.session = session_manager.session_obj
+        # the above red line is due type difference
 
         response = self.get_response(request)
 
