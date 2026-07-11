@@ -1,10 +1,12 @@
-from django.contrib.auth.models import AnonymousUser
-from django.test import RequestFactory, TestCase
-from django.http import HttpResponse
-from config.middleware import AuthenticationMiddleware, MySessionMiddleware
-from app.models import Session
-from app.session import SessionStore
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
+from django.http import HttpResponse
+from django.test import RequestFactory, TestCase
+
+from config.middleware import AuthenticationMiddleware
+from session.middleware import MySessionMiddleware
+from session.models import SessionModel as Session
+from session.session_store import SessionManager
 
 User = get_user_model()
 
@@ -30,30 +32,32 @@ class SessionMiddlewareTests(TestCase):
         self.assertTrue(Session.objects.filter(session_key=session_key).exists())
 
     def test_reuses_existing_session(self):
-        session = Session.create()
+        session = SessionManager()
+        session.create_new_session()
 
         middleware = MySessionMiddleware(self.get_response)
 
         request = RequestFactory().get("/")
         request.COOKIES = {
-            "sessionid": session.session_key,
+            "sessionid": str(session.session_obj.session_id),
         }
 
         response = middleware(request)
 
         self.assertEqual(
             response.cookies["sessionid"].value,
-            session.session_key,
+            str(session.session_obj.session_id),
         )
 
     def test_session_persists_data(self):
-        session = Session.create()
+        session = SessionManager()
+        session.create_new_session()
 
         middleware = MySessionMiddleware(self.get_response)
 
         request = RequestFactory().get("/")
         request.COOKIES = {
-            "sessionid": session.session_key,
+            "sessionid": str(session.session_obj.session_id),
         }
 
         middleware(request)
@@ -63,7 +67,7 @@ class SessionMiddlewareTests(TestCase):
 
         request2 = RequestFactory().get("/")
         request2.COOKIES = {
-            "sessionid": session.session_key,
+            "sessionid": str(session.session_obj.session_id),
         }
 
         middleware(request2)
@@ -102,16 +106,17 @@ class AuthenticationIntegrationTests(TestCase):
             password="secret",
         )
 
-        session = Session.create()
+        session = SessionManager()
+        session.create_new_session()
 
-        store = SessionStore(session)
+        store = session.session_obj
         store["_auth_user_id"] = str(user.pk)
         store["_auth_user_backend"] = "django.contrib.auth.backends.ModelBackend"
-        store.save()
+        session.save_session()
 
         request = RequestFactory().get("/")
         request.COOKIES = {
-            "sessionid": session.session_key,
+            "sessionid": str(session.session_obj.session_id),
         }
 
         MySessionMiddleware(lambda request: HttpResponse("OK"))(request)
